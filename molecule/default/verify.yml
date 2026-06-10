@@ -2,4 +2,60 @@
 - name: Verify
   hosts: all
   gather_facts: true
-  tasks: []
+  become: true
+
+  tasks:
+    - name: Check user claude exists
+      ansible.builtin.getent:
+        database: passwd
+        key: claude
+
+    - name: Get claude group membership
+      ansible.builtin.command: id -nG claude
+      register: claude_groups
+      changed_when: false
+
+    - name: Assert claude is in users group
+      ansible.builtin.assert:
+        that: "'users' in claude_groups.stdout.split()"
+        fail_msg: "User claude is not in users group"
+
+    - name: Check claude has authorized keys
+      ansible.builtin.stat:
+        path: /home/claude/.ssh/authorized_keys
+      register: auth_keys
+
+    - name: Assert authorized_keys exists
+      ansible.builtin.assert:
+        that: auth_keys.stat.exists
+        fail_msg: "authorized_keys not found for claude"
+
+    - name: Check sshd_config PermitRootLogin
+      ansible.builtin.command: grep -E '^PermitRootLogin' /etc/ssh/sshd_config
+      register: permit_root
+      changed_when: false
+
+    - name: Assert PermitRootLogin is no
+      ansible.builtin.assert:
+        that: "'no' in permit_root.stdout"
+        fail_msg: "PermitRootLogin is not set to no"
+
+    - name: Check sshd_config PasswordAuthentication
+      ansible.builtin.command: grep -E '^PasswordAuthentication' /etc/ssh/sshd_config
+      register: password_auth
+      changed_when: false
+
+    - name: Assert PasswordAuthentication is no
+      ansible.builtin.assert:
+        that: "'no' in password_auth.stdout"
+        fail_msg: "PasswordAuthentication is not set to no"
+
+    - name: Check sshd_config PubkeyAuthentication
+      ansible.builtin.command: grep -E '^PubkeyAuthentication' /etc/ssh/sshd_config
+      register: pubkey_auth
+      changed_when: false
+
+    - name: Assert PubkeyAuthentication is yes
+      ansible.builtin.assert:
+        that: "'yes' in pubkey_auth.stdout"
+        fail_msg: "PubkeyAuthentication is not set to yes"

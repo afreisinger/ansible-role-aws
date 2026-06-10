@@ -1,3 +1,18 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # defaults file
+
+aws_users: []
+# aws_users:
+#   - name: claude
+#     password: "plaintext_stored_in_vault"
+#     groups:
+#       - users
+#     sudo: false
+#     github_user: afreisinger
+
+aws_root_password: ""
+
+aws_ssh_permit_root_login: "no"
+aws_ssh_password_authentication: "no"
+aws_ssh_pubkey_authentication: "yes"

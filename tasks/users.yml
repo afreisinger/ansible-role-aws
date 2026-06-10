@@ -1,0 +1,48 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Ensure user groups exist
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ aws_users | map(attribute='groups') | flatten | unique | reject('equalto', 'sudo') | list }}"
+  when: aws_users | length > 0
+
+- name: Create users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    password: "{{ item.password | password_hash('sha512', 65534 | random(seed=item.name) | string) }}"
+    groups: "{{ item.groups + (['sudo'] if item.sudo | default(false) else []) }}"
+    append: true
+    shell: /bin/bash
+    state: present
+  loop: "{{ aws_users }}"
+  when: aws_users | length > 0
+  no_log: true
+
+- name: Fetch SSH public keys from GitHub
+  ansible.builtin.uri:
+    url: "https://github.com/{{ item.github_user }}.keys"
+    return_content: true
+  register: aws_github_keys
+  loop: "{{ aws_users }}"
+  when:
+    - aws_users | length > 0
+    - item.github_user is defined
+  delegate_to: localhost
+
+- name: Add SSH public keys from GitHub
+  ansible.posix.authorized_key:
+    user: "{{ item.item.name }}"
+    key: "{{ item.content }}"
+    state: present
+  loop: "{{ aws_github_keys.results }}"
+  when:
+    - item is not skipped
+    - item.content | trim | length > 0
+
+- name: Set root password
+  ansible.builtin.user:
+    name: root
+    password: "{{ aws_root_password | password_hash('sha512', 65534 | random(seed='root') | string) }}"
+  when: aws_root_password | length > 0
+  no_log: true

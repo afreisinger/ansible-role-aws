@@ -3,6 +3,16 @@
   hosts: all
   become: true
 
+  vars:
+    aws_root_password: "molecule_root_pass"
+    aws_users:
+      - name: claude
+        password: "molecule_pass"
+        groups:
+          - users
+        sudo: false
+        github_user: afreisinger
+
   pre_tasks:
     - name: Update apt cache.
       ansible.builtin.apt:
@@ -24,4 +34,3 @@
 
   roles:
     - role: "afreisinger.aws"
-      vars: {}
