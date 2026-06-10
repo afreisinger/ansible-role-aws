@@ -16,3 +16,15 @@ aws_root_password: ""
 aws_ssh_permit_root_login: "no"
 aws_ssh_password_authentication: "no"
 aws_ssh_pubkey_authentication: "yes"
+
+aws_ufw_enabled: false
+aws_ufw_rules:
+  - port: 22
+    proto: tcp
+    comment: SSH
+  - port: 80
+    proto: tcp
+    comment: HTTP
+  - port: 443
+    proto: tcp
+    comment: HTTPS

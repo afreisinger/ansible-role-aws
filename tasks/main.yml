@@ -3,3 +3,5 @@
 # tasks file
 - ansible.builtin.import_tasks: users.yml
 - ansible.builtin.import_tasks: ssh.yml
+- ansible.builtin.include_tasks: ufw.yml
+  when: aws_ufw_enabled | bool
