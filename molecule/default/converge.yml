@@ -6,6 +6,7 @@
   vars:
     aws_root_password: "molecule_root_pass"
     aws_ufw_enabled: true
+    aws_gh_enabled: true
     aws_users:
       - name: claude
         password: "molecule_pass"

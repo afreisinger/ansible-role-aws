@@ -1,0 +1,32 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Install extra packages
+  ansible.builtin.apt:
+    name: "{{ aws_packages }}"
+    state: present
+    update_cache: true
+  when: aws_packages | length > 0
+
+- name: Install gh CLI apt key
+  ansible.builtin.get_url:
+    url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+    dest: /usr/share/keyrings/githubcli-archive-keyring.gpg
+    mode: '0644'
+  when: aws_gh_enabled | bool
+
+- name: Add gh CLI apt repository
+  ansible.builtin.apt_repository:
+    repo: >-
+      deb [arch={{ ansible_architecture | replace('x86_64', 'amd64') }}
+      signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg]
+      https://cli.github.com/packages stable main
+    filename: github-cli
+    state: present
+  when: aws_gh_enabled | bool
+
+- name: Install gh CLI
+  ansible.builtin.apt:
+    name: gh
+    state: present
+    update_cache: true
+  when: aws_gh_enabled | bool

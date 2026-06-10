@@ -69,3 +69,23 @@
       ansible.builtin.assert:
         that: "'Status: active' in ufw_status.stdout"
         fail_msg: "UFW is not active"
+
+    - name: Check tmux is installed
+      ansible.builtin.command: which tmux
+      register: tmux_check
+      changed_when: false
+
+    - name: Assert tmux is installed
+      ansible.builtin.assert:
+        that: tmux_check.rc == 0
+        fail_msg: "tmux is not installed"
+
+    - name: Check gh is installed
+      ansible.builtin.command: which gh
+      register: gh_check
+      changed_when: false
+
+    - name: Assert gh is installed
+      ansible.builtin.assert:
+        that: gh_check.rc == 0
+        fail_msg: "gh CLI is not installed"
