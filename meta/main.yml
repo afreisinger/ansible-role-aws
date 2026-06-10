@@ -1,0 +1,20 @@
+---
+# SPDX-License-Identifier: MIT-0
+galaxy_info:
+  role_name: "aws"
+  namespace: "afreisinger"
+  author: "Adrián Freisinger"
+  description: "Ansible role for AWS"
+
+  license: MIT
+
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Ubuntu
+      versions:
+        - noble
+
+  galaxy_tags: []
+
+dependencies: []

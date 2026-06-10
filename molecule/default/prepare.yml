@@ -1,0 +1,73 @@
+---
+- name: Prepare environment (collections, roles, linters)
+  hosts: localhost
+  gather_facts: false
+  tasks:
+
+    - name: Check if collections.yml exists
+      ansible.builtin.stat:
+        path: collections.yml
+      register: collections_file
+
+    - name: Install Ansible collections
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install --force -r collections.yml
+      when: collections_file.stat.exists
+      changed_when: false
+
+    - name: Check if requirements.yml exists
+      ansible.builtin.stat:
+        path: requirements.yml
+      register: requirements_file
+
+    - name: Install Ansible roles
+      ansible.builtin.command:
+        cmd: ansible-galaxy install --force -r requirements.yml
+      when: requirements_file.stat.exists
+      changed_when: false
+
+    - name: Check if .yamllint exists in role root
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/../../.yamllint"
+      register: yamllint_conf
+
+    - name: Copy .yamllint to /tmp/yamllint.yml
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../.yamllint"
+        dest: /tmp/yamllint.yml
+        mode: '0644'
+      when: yamllint_conf.stat.exists
+
+    - name: Run yamllint (non-fatal)
+      ansible.builtin.command: yamllint -c /tmp/yamllint.yml .
+      register: yamllint_result
+      failed_when: false
+      changed_when: false
+
+    - name: Show yamllint output if failed
+      ansible.builtin.debug:
+        msg: "{{ yamllint_result.stdout_lines }}"
+      when: yamllint_result.rc != 0
+
+    - name: Check if .ansible-lint exists in role root
+      ansible.builtin.stat:
+        path: "{{ playbook_dir }}/../../.ansible-lint"
+      register: ansiblelint_conf
+
+    - name: Copy .ansible-lint to /tmp/ansible-lint.yml
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../.ansible-lint"
+        dest: /tmp/ansible-lint.yml
+        mode: '0644'
+      when: ansiblelint_conf.stat.exists
+
+    - name: Run ansible-lint (non-fatal)
+      ansible.builtin.command: ansible-lint --config-file /tmp/ansible-lint.yml .
+      register: ansible_lint_result
+      failed_when: false
+      changed_when: false
+
+    - name: Show ansible-lint output if failed
+      ansible.builtin.debug:
+        msg: "{{ ansible_lint_result.stdout_lines }}"
+      when: ansible_lint_result.rc != 0

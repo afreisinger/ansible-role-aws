@@ -1,0 +1,10 @@
+---
+- name: Test playbook for afreisinger.aws role
+  hosts: all
+  become: true
+
+  pre_tasks: []
+
+  roles:
+    - role: "afreisinger.aws"
+      vars: {}

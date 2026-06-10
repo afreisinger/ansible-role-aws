@@ -1,0 +1,21 @@
+# Ansible
+*.retry
+
+# Molecule
+.molecule/
+.cache/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+ENV/
+env/
+venv/
+
+# Editor/OS
+.DS_Store
+.idea/
+.vscode/
+.env
