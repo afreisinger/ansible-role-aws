@@ -23,12 +23,22 @@
   ansible.builtin.uri:
     url: "https://github.com/{{ item.github_user }}.keys"
     return_content: true
+    status_code: [200, 404]
   register: aws_github_keys
   loop: "{{ aws_users }}"
   when:
     - aws_users | length > 0
     - item.github_user is defined
   delegate_to: localhost
+  failed_when: false
+
+- name: Warn when GitHub keys fetch failed
+  ansible.builtin.debug:
+    msg: "Could not fetch SSH keys for {{ item.item.github_user }}: {{ item.msg | default('HTTP ' + (item.status | default(-1) | string)) }}"
+  loop: "{{ aws_github_keys.results }}"
+  when:
+    - item is not skipped
+    - item.failed | default(false) or item.status | default(0) != 200
 
 - name: Add SSH public keys from GitHub
   ansible.posix.authorized_key:
@@ -38,6 +48,8 @@
   loop: "{{ aws_github_keys.results }}"
   when:
     - item is not skipped
+    - not (item.failed | default(false))
+    - item.status | default(0) == 200
     - item.content | trim | length > 0
 
 - name: Set root password
