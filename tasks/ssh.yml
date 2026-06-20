@@ -1,28 +1,27 @@
 #SPDX-License-Identifier: MIT-0
 ---
-- name: Disable root SSH login
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^#?PermitRootLogin'
-    line: "PermitRootLogin {{ aws_ssh_permit_root_login }}"
-    state: present
-    validate: sshd -t -f %s
+- name: Ensure sshd_config.d directory exists
+  ansible.builtin.file:
+    path: /etc/ssh/sshd_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Configure SSH hardening
+  ansible.builtin.copy:
+    content: |
+      PermitRootLogin {{ aws_ssh_permit_root_login }}
+      PasswordAuthentication {{ aws_ssh_password_authentication }}
+      PubkeyAuthentication {{ aws_ssh_pubkey_authentication }}
+    dest: /etc/ssh/sshd_config.d/00-hardening.conf
+    owner: root
+    group: root
+    mode: '0600'
+  register: ssh_hardening
   notify: Restart ssh
 
-- name: Disable password authentication
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^#?PasswordAuthentication'
-    line: "PasswordAuthentication {{ aws_ssh_password_authentication }}"
-    state: present
-    validate: sshd -t -f %s
-  notify: Restart ssh
-
-- name: Enable public key authentication
-  ansible.builtin.lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^#?PubkeyAuthentication'
-    line: "PubkeyAuthentication {{ aws_ssh_pubkey_authentication }}"
-    state: present
-    validate: sshd -t -f %s
-  notify: Restart ssh
+- name: Validate sshd config
+  ansible.builtin.command: sshd -t
+  changed_when: false
+  when: ssh_hardening is changed

@@ -30,34 +30,24 @@
         that: auth_keys.stat.exists
         fail_msg: "authorized_keys not found for claude"
 
-    - name: Check sshd_config PermitRootLogin
-      ansible.builtin.command: grep -E '^PermitRootLogin' /etc/ssh/sshd_config
-      register: permit_root
+    - name: Get effective sshd configuration
+      ansible.builtin.command: sshd -T
+      register: sshd_effective
       changed_when: false
 
     - name: Assert PermitRootLogin is no
       ansible.builtin.assert:
-        that: "'no' in permit_root.stdout"
+        that: "'permitrootlogin no' in sshd_effective.stdout"
         fail_msg: "PermitRootLogin is not set to no"
-
-    - name: Check sshd_config PasswordAuthentication
-      ansible.builtin.command: grep -E '^PasswordAuthentication' /etc/ssh/sshd_config
-      register: password_auth
-      changed_when: false
 
     - name: Assert PasswordAuthentication is no
       ansible.builtin.assert:
-        that: "'no' in password_auth.stdout"
+        that: "'passwordauthentication no' in sshd_effective.stdout"
         fail_msg: "PasswordAuthentication is not set to no"
-
-    - name: Check sshd_config PubkeyAuthentication
-      ansible.builtin.command: grep -E '^PubkeyAuthentication' /etc/ssh/sshd_config
-      register: pubkey_auth
-      changed_when: false
 
     - name: Assert PubkeyAuthentication is yes
       ansible.builtin.assert:
-        that: "'yes' in pubkey_auth.stdout"
+        that: "'pubkeyauthentication yes' in sshd_effective.stdout"
         fail_msg: "PubkeyAuthentication is not set to yes"
 
     - name: Check UFW status
