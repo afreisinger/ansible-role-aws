@@ -19,6 +19,7 @@ aws_ssh_pubkey_authentication: "yes"
 
 aws_packages:
   - tmux
+  - fail2ban
 
 aws_gh_enabled: false
 
