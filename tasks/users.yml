@@ -10,7 +10,7 @@
 - name: Create users
   ansible.builtin.user:
     name: "{{ item.name }}"
-    password: "{{ item.password | password_hash('sha512', 65534 | random(seed=item.name) | string) }}"
+    password: "{{ item.password | password_hash('sha512', (item.name | hash('sha256'))[:16]) }}"
     groups: "{{ item.groups + (['sudo'] if item.sudo | default(false) else []) }}"
     append: true
     shell: /bin/bash
@@ -55,6 +55,6 @@
 - name: Set root password
   ansible.builtin.user:
     name: root
-    password: "{{ aws_root_password | password_hash('sha512', 65534 | random(seed='root') | string) }}"
+    password: "{{ aws_root_password | password_hash('sha512', ('root' | hash('sha256'))[:16]) }}"
   when: aws_root_password | length > 0
   no_log: true
