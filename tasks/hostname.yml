@@ -1,9 +1,18 @@
 #SPDX-License-Identifier: MIT-0
 ---
-- name: Set hostname
-  ansible.builtin.hostname:
-    name: "{{ aws_hostname }}"
-    use: generic
+- name: Write /etc/hostname
+  ansible.builtin.copy:
+    content: "{{ aws_hostname }}\n"
+    dest: /etc/hostname
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Set runtime hostname
+  ansible.builtin.command:
+    cmd: hostname "{{ aws_hostname }}"
+  changed_when: false
+  failed_when: false
 
 - name: Prevent cloud-init from resetting hostname
   ansible.builtin.copy:
