@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install ansible molecule molecule-plugins[docker] ansible-lint yamllint passlib
+          pip install ansible-core molecule molecule-plugins[docker] ansible-lint yamllint passlib
 
       - name: Run Molecule tests
         run: molecule test
