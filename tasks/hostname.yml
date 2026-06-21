@@ -1,0 +1,20 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ aws_hostname }}"
+
+- name: Prevent cloud-init from resetting hostname
+  ansible.builtin.copy:
+    content: "preserve_hostname: true\n"
+    dest: /etc/cloud/cloud.cfg.d/99-preserve-hostname.cfg
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Update /etc/hosts local hostname entry
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1'
+    line: "127.0.1.1 {{ aws_hostname }}"
+    state: present

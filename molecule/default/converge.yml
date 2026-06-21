@@ -4,6 +4,7 @@
   become: true
 
   vars:
+    aws_hostname: "molecule-test"
     aws_root_password: "molecule_root_pass"
     aws_ufw_enabled: true
     aws_gh_enabled: true

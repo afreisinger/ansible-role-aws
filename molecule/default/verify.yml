@@ -5,6 +5,21 @@
   become: true
 
   tasks:
+    - name: Assert hostname is set
+      ansible.builtin.assert:
+        that: ansible_facts['hostname'] == 'molecule-test'
+        fail_msg: "Hostname is not molecule-test (got: {{ ansible_facts['hostname'] }})"
+
+    - name: Assert cloud-init preserve_hostname is set
+      ansible.builtin.stat:
+        path: /etc/cloud/cloud.cfg.d/99-preserve-hostname.cfg
+      register: preserve_hostname_cfg
+
+    - name: Assert preserve_hostname file exists
+      ansible.builtin.assert:
+        that: preserve_hostname_cfg.stat.exists
+        fail_msg: "cloud-init preserve_hostname config not found"
+
     - name: Check user claude exists
       ansible.builtin.getent:
         database: passwd

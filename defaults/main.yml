@@ -2,6 +2,8 @@
 ---
 # defaults file
 
+aws_hostname: ""
+
 aws_users: []
 # aws_users:
 #   - name: claude
