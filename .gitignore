@@ -3,6 +3,7 @@
 
 # Molecule
 .molecule/
+.ansible/
 .cache/
 *.log
 
