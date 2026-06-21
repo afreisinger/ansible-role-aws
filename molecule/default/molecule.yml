@@ -12,6 +12,7 @@ platforms:
   - name: instance
     image: "afreisinger/docker-${MOLECULE_DISTRO:-ubuntu2404-aws}-ansible"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
+    hostname: molecule-test
 
     volumes:
       - "/sys/fs/cgroup:/sys/fs/cgroup:rw"
