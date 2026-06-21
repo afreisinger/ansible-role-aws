@@ -3,6 +3,7 @@
 - name: Set hostname
   ansible.builtin.hostname:
     name: "{{ aws_hostname }}"
+    use: generic
 
 - name: Prevent cloud-init from resetting hostname
   ansible.builtin.copy:
