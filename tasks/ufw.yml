@@ -1,5 +1,27 @@
 #SPDX-License-Identifier: MIT-0
 ---
+- name: Compute UFW rules checksum
+  ansible.builtin.set_fact:
+    _aws_ufw_hash: "{{ (aws_ufw_rules | to_json) | hash('sha256') }}"
+
+- name: Check previous UFW rules checksum
+  ansible.builtin.stat:
+    path: /etc/ufw/.ansible_hash
+  register: _aws_ufw_hash_file
+
+- name: Read previous UFW rules checksum
+  ansible.builtin.slurp:
+    src: /etc/ufw/.ansible_hash
+  register: _aws_ufw_prev_hash
+  when: _aws_ufw_hash_file.stat.exists
+
+- name: Reset UFW when rules changed
+  community.general.ufw:
+    state: reset
+  when: >
+    not _aws_ufw_hash_file.stat.exists or
+    (_aws_ufw_prev_hash.content | b64decode | trim) != _aws_ufw_hash
+
 - name: Set UFW default incoming policy to deny
   community.general.ufw:
     direction: incoming
@@ -21,3 +43,11 @@
 - name: Enable UFW
   community.general.ufw:
     state: enabled
+
+- name: Save UFW rules checksum
+  ansible.builtin.copy:
+    content: "{{ _aws_ufw_hash }}"
+    dest: /etc/ufw/.ansible_hash
+    owner: root
+    group: root
+    mode: '0600'
